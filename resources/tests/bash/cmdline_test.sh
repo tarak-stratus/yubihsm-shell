@@ -53,7 +53,10 @@ rm random.txt
 
 echo "********************** Asym keys ********************* "
 ../test_edkey.sh "$BIN"
-../test_eckey.sh "$BIN"
+if [ -z ${DOCKER_IMAGE} ] || [ ${DOCKER_IMAGE} != "centos:7" ]; then
+    # This DOCKER_IMAGE environment variable is set in the build_and_test.yml github workflow.
+    ../test_eckey.sh "$BIN"
+fi
 ../test_rsakey.sh "$BIN"
 
 echo "********************** HMAC keys ********************* "
