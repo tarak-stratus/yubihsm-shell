@@ -1580,7 +1580,7 @@ int ecdh_load_module(const char *module, FILE *out) {
   }
 
   if (strcmp(module, "-")) {
-    module_handle = dlopen(module, RTLD_NOW | RTLD_GLOBAL);
+    module_handle = dlopen(module, RTLD_NOW);
     if (module_handle == 0) {
       fprintf(out, "Can't open shared library '%s': %s\n", module, dlerror());
       return CKR_ARGUMENTS_BAD;
