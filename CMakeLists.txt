@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 
-cmake_minimum_required (VERSION 2.8)
-if (CMAKE_VERSION VERSION_GREATER 3.0.0)
-  # policy CMP0025 is to get AppleClang identifier rather than Clang for both
-  # this matters since the apple compiler accepts different flags.
-  cmake_policy(SET CMP0025 NEW)
-  cmake_policy(SET CMP0042 NEW)
-  cmake_policy(SET CMP0054 NEW)
-endif ()
+cmake_minimum_required (VERSION 3.1)
+# policy CMP0025 is to get AppleClang identifier rather than Clang for both
+# this matters since the apple compiler accepts different flags.
+cmake_policy(SET CMP0025 NEW)
+cmake_policy(SET CMP0042 NEW)
+cmake_policy(SET CMP0054 NEW)
 
 project (yubihsm-shell)
 
@@ -95,13 +93,10 @@ endif ()
 
 set (yubihsm_shell_VERSION_MAJOR 2)
 set (yubihsm_shell_VERSION_MINOR 3)
-set (yubihsm_shell_VERSION_PATCH 0)
+set (yubihsm_shell_VERSION_PATCH 1)
 set (VERSION "${yubihsm_shell_VERSION_MAJOR}.${yubihsm_shell_VERSION_MINOR}.${yubihsm_shell_VERSION_PATCH}")
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(ENV{PKG_CONFIG_PATH} "/usr/local/opt/openssl@1.1/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-  set(ENV{PKG_CONFIG_PATH} "/usr/local/opt/libedit/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   set(ENV{PKG_CONFIG_PATH} "/usr/libdata/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 endif ()
 
@@ -111,6 +106,8 @@ endif()
 
 enable_testing()
 find_package(codecov)
+
+add_definitions(-DOPENSSL_API_COMPAT=0x10000000L)
 
 if(WIN32)
   add_definitions(-DWIN32_LEAN_AND_MEAN=1)
@@ -125,17 +122,17 @@ if(MSVC)
 
   if(SUPRESS_MSVC_WARNINGS)
   set(MSVC_DISABLED_WARNINGS_LIST
-            "C4200" # nonstandard extension used: zero-sized array in struct/union;
-            "C4204" # nonstandard extension used: non-constant aggregate initializer;
             "C4706" # assignment within conditional expression;
             "C4996" # The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name
-
             "C4005" # redefinition of micros. Status codes are defined in winnt.h and then redefined in ntstatus.h with the same values
+            "C4244" # conversion of size_t to other types. Since we don't have sizes that occupy more than 2 bytes, this should be safe to ignore
             "C4267" # conversion of size_t to other types. Since we don't have sizes that occupy more than 2 bytes, this should be safe to ignore
             "C4100" # unreferenced formal parameter
             "C4201" # nonstandard extension used: nameless struct/union
             "C4295" # array is too small to include a terminating null character. They arrays it's complaining about aren't meant to include terminating null character (triggered in tests and examples only)
             "C4127" # conditional expression is constant
+            "C5105" # macro expansion producing 'defined' has undefined behavior
+            "C4018" # signed/unsigned mismatch
             )
     # The construction in the following 3 lines was taken from LibreSSL's
     # CMakeLists.txt.
@@ -151,7 +148,9 @@ else()
   message(STATUS "not win32")
 
   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-zero-length")
-
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-missing-braces")
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-missing-field-initializers")
+  
   include(CheckFunctionExists)
 
   check_function_exists(memset_s HAVE_MEMSET_S)
