@@ -68,10 +68,11 @@ typedef struct {
 } find_info;
 
 typedef struct {
-  EVP_MD_CTX *md_ctx; // Digest context
-  uint16_t key_id;    // Key id
-  CK_ULONG key_len;   // Length in bits
-  uint16_t sig_len;   // Length in bytes
+  EVP_MD_CTX *md_ctx;    // Digest context
+  uint16_t key_id;       // Key id
+  yh_algorithm key_algo; // Key algorithm
+  CK_ULONG key_len;      // Length in bits
+  uint16_t sig_len;      // Length in bytes
 } sign_info;
 
 typedef struct {
@@ -103,6 +104,7 @@ typedef struct {
   const EVP_MD *mgf1md;  // mgf1 md used for rsa-pss
   uint16_t key_id;       // Key id
   CK_ULONG key_len;      // Length in bits
+  yh_algorithm key_algo; // Key algorithm
 } verify_info;
 
 typedef union {
